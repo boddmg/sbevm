@@ -4,3 +4,5 @@
 
 /CMakeFiles
 /*.exe
+/stack_machine
+.idea
