@@ -6,4 +6,9 @@ instructionSet = ["in","out",
 program = []
 mem = [0 for n in range(1000)]
 
+def excete():
+
+    pass
+
+
 print instructionSet
