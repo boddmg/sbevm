@@ -6,3 +6,5 @@
 /*.exe
 /stack_machine
 .idea
+/experiment/*.pyc
+/experiment/tests/*.pyc
