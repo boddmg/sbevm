@@ -2,22 +2,30 @@ __author__ = 'boddmg'
 
 import re
 
+class UnkownToken(Exception):
+    pass
+
+class UnkownLexerError(Exception):
+    pass
+
 regex_table={
     # Keyword
     "int" : "int",
     "function" : "function",
 
     # lex
-    "name" : "[A-Za-z_]+[\w]",
+    "number" : "[0-9]+",
+    "name" : "[A-Za-z_]+[\w]*",
 
     #symbol
     ":" : ":",
-    "+" : "+",
-    "-" : "-",
-    "*" : "*",
-    "\\" : "\\",
-    "{" : "{",
-    "}" : "}",
+    "+" : "\+",
+    "-" : "\-",
+    "*" : "\*",
+    "\\" : "\\\\",
+    "=" : "=",
+    "{" : "\{",
+    "}" : "\}",
     ";" : ";"
 
 }
@@ -41,20 +49,25 @@ class Token():
     def __str__(self):
         return "type: %s , content: %s" % (self._type,self._content)
 
-
 class Lexer():
     def __init__(self,_source_text=""):
         self._source_text = _source_text
         #self._pattern = re.compile()
 
     def get_next_token(self):
-        self._source_text = self._source_text.lstrip(" ")
+        self._source_text = self._source_text.lstrip()
 
-        for key in regex_table:
-            match = re.match("\\A"+regex_table[key],self._source_text)
-            if match:
-                new_token = Token(key,match.group(0))
-                self._source_text=self._source_text[match.end(0):]
-                return new_token
+        try:
+            for key in regex_table:
+                regex = "\\A"+regex_table[key]
+                match = re.match(regex,self._source_text)
+                if match:
+                    new_token = Token(key,match.group(0))
+                    self._source_text=self._source_text[match.end(0):]
+                    return new_token
+            raise UnkownToken
+        except:
+            print self._source_text
+            raise UnkownLexerError
 
 
