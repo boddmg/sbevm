@@ -8,27 +8,40 @@ class UnkownToken(Exception):
 class UnkownLexerError(Exception):
     pass
 
-regex_table={
+class LexerEmpty(Exception):
+    pass
+
+regex_table=[
     # Keyword
-    "int" : "int",
-    "function" : "function",
+    ["int", "int"],
+    ["if", "if"],
+    ["else", "else"],
+    ["while", "while"],
 
     # lex
-    "number" : "[0-9]+",
-    "name" : "[A-Za-z_]+[\w]*",
+    ["number", "[0-9]+"],
+    ["name", "[A-Za-z_]+[\w]*"],
 
     #symbol
-    ":" : ":",
-    "+" : "\+",
-    "-" : "\-",
-    "*" : "\*",
-    "\\" : "\\\\",
-    "=" : "=",
-    "{" : "\{",
-    "}" : "\}",
-    ";" : ";"
+    ["!=", "!="],
+    ["==", "=="],
+    [":", ":"],
+    [">=", "\>\="],
+    ["<=", "\<\="],
+    [">", "\>"],
+    ["<", "\<"],
+    ["+", "\+"],
+    ["-", "\-"],
+    ["*", "\*"],
+    ["\\", "\\\\"],
+    ["=", "="],
+    ["(", "\("],
+    [")", "\)"],
+    ["{", "\{"],
+    ["}", "\}"],
+    [";", ";"]
 
-}
+]
 
 class Token():
     def __init__(self,_type,_content=""):
@@ -56,18 +69,22 @@ class Lexer():
 
     def get_next_token(self):
         self._source_text = self._source_text.lstrip()
+        if self._source_text.strip() == "":
+            raise LexerEmpty
 
         try:
-            for key in regex_table:
-                regex = "\\A"+regex_table[key]
+            for regex_pair in regex_table:
+                regex = "\\A"+regex_pair[1]
                 match = re.match(regex,self._source_text)
                 if match:
-                    new_token = Token(key,match.group(0))
+                    new_token = Token(regex_pair[0],match.group(0))
                     self._source_text=self._source_text[match.end(0):]
                     return new_token
             raise UnkownToken
-        except:
+        except UnkownToken:
             print self._source_text
+            raise
+        except:
             raise UnkownLexerError
 
 
