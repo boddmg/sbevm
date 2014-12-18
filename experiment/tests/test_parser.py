@@ -38,5 +38,6 @@ class test_parser(unittest.TestCase):
                 print i,"sample:",sample_tokens[i],"  token:",current_token
                 raise
 
-
+    def test_the_ast(self):
+        pass
 
