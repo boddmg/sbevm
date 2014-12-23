@@ -1,5 +1,7 @@
 __author__ = 'boddmg'
 
+from texttable import *
+
 terminal_symbol = {
     'number',
     'name',
@@ -53,18 +55,23 @@ def get_first_set(derivation):
     for i in derivation:
         if i[1] == ['empty']:
             first_set[i[0]].add('empty')
-            continue
-
+    derivation = filter(lambda x:x[1]!=['empty'], derivation)
     while True:
-        last_set = first_set
+        last_set = str(first_set)
         for i in derivation:
             for j in i[1]:
+                print i,j
+                for symbol in first_set[j]:
+                    first_set[i[0]].add(symbol)
+
                 if 'empty' not in first_set[j]:
                     break
-                current_symbol = first_set[i[1]]
-                first_set[i[0]] = first_set[i[0]] | current_symbol.remove("empty")
-        if first_set == last_set:
+        if str(first_set) == last_set:
             break
+    return first_set
+
+def get_follow_set(derivation):
+
     pass
 
 class Parser():
@@ -72,4 +79,10 @@ class Parser():
         pass
 
 if __name__ == "__main__":
-    print get_first_set(derivations)
+    table = Texttable()
+    first_set = get_first_set(derivations)
+    table.header(['name','first set'])
+    for i in non_terminal_symbol:
+        row = [i,str(first_set[i])]
+        table.add_row(row)
+    print table.draw()
