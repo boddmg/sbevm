@@ -53,6 +53,7 @@ class test_parser(unittest.TestCase):
         }
 
         derivations = [
+            ['S',['E']],
             ['E', ['T', 'E`']],
             ['E`', ['+', 'T', 'E`']],
             ['E`', ['empty']],

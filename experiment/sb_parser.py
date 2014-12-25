@@ -91,7 +91,6 @@ class Parser():
             if 'empty' not in self.first_set[i]:
                 first_set -= {'empty'}
                 return first_set
-        print sub_string,first_set
         return first_set
 
     def calculate_follow_set(self):
@@ -107,19 +106,17 @@ class Parser():
             last_follow_hash = str(follow_set)
             for i in derivations:
                 for j in range(len(i[1])):
+
                     if i[1][j] == 'empty':
                         break
 
                     if j < len(i[1])-1 :
                         follow_set[i[1][j]] |= self.get_sub_string_first_set(i[1][j+1:]) - {'empty'}
-                        print i[1],j,i[1][j+1:]
+                        print 'origin:',i[1],j,i[1][j+1:],self.get_sub_string_first_set(i[1][j+1:]),follow_set[i[1][j]],i[1][j]
 
-                    if j == len(i[1])-1 or \
-                       'empty' in self.get_sub_string_first_set(i[1][j:]) :
-                        if i[1][j] == 'empty':
-                            continue
-                        #print follow_set[i[0]]
-                        follow_set[i[1][j]] |= follow_set[i[0]]
+                    if j == len(i[1])-1 or ('empty' in self.get_sub_string_first_set(i[1][j:])) :
+                        print 'added:',i[0],i[1][j],follow_set[i[0]],follow_set[i[1][j]]
+                        follow_set[i[1][j]] = follow_set[i[1][j]] | follow_set[i[0]]
 
             if last_follow_hash == str(follow_set):
                 break
