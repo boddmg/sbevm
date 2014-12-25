@@ -23,7 +23,6 @@ terminal_symbol = {
 
 derivations = [
     ['S', ['P']],
-    ['S', ['empty']],
     ['P', ['B', 'P']],
     ['P', ['empty']],
     ['B', ['int', 'E']],
@@ -103,7 +102,7 @@ class Parser():
 
         derivations = self._derivations
         while True:
-            last_follow_hash = str(follow_set)
+            last_follow = follow_set.copy()
             for i in derivations:
                 for j in range(len(i[1])):
 
@@ -111,17 +110,21 @@ class Parser():
                         break
 
                     if j < len(i[1])-1 :
-                        follow_set[i[1][j]] |= self.get_sub_string_first_set(i[1][j+1:]) - {'empty'}
-                        print 'origin:',i[1],j,i[1][j+1:],self.get_sub_string_first_set(i[1][j+1:]),follow_set[i[1][j]],i[1][j]
+                        follow_set[i[1][j]] = follow_set[i[1][j]] | self.get_sub_string_first_set(i[1][j+1:]) - {'empty'}
+                        #print 'origin:',i[1],j,i[1][j+1:],self.get_sub_string_first_set(i[1][j+1:]),follow_set[i[1][j]],i[1][j]
 
-                    if j == len(i[1])-1 or ('empty' in self.get_sub_string_first_set(i[1][j:])) :
-                        print 'added:',i[0],i[1][j],follow_set[i[0]],follow_set[i[1][j]]
+                    if j == len(i[1])-1 or ('empty' in self.get_sub_string_first_set(i[1][j+1:])) :
+                        #print 'added:',i[0],i[1],i[1][j],j,follow_set[i[0]],follow_set[i[1][j]]
                         follow_set[i[1][j]] = follow_set[i[1][j]] | follow_set[i[0]]
 
-            if last_follow_hash == str(follow_set):
+            if last_follow == follow_set:
                 break
         self._follow_set = follow_set
         return follow_set
+
+    def calculate_predict_table(self):
+        first_set = self.first_set
+        follow_set = self.follow_set
 
 def print_set_dict(set_dict):
     table = Texttable()
