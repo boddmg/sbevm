@@ -123,8 +123,25 @@ class Parser():
         return follow_set
 
     def calculate_predict_table(self):
+        predict_table = dict()
+        for i in self._terminal_symbol:
+            predict_table[i] = dict()
+        predict_table['$'] = dict()
+
         first_set = self.first_set
         follow_set = self.follow_set
+
+        for i in self._derivations:
+            for j in self.get_sub_string_first_set(i[1]):
+                if j in self._terminal_symbol:
+                    predict_table[j][i[0]] = i
+            if 'empty' in self.get_sub_string_first_set(i[1]):
+                for j in follow_set[i[0]]:
+                    predict_table[i[0]][j] = i
+                if '$' in follow_set[i[0]]:
+                    predict_table[i[0]]['$'] = i
+        self._predict_table = predict_table
+        return predict_table
 
 def print_set_dict(set_dict):
     table = Texttable()
@@ -132,6 +149,9 @@ def print_set_dict(set_dict):
     for i in set_dict:
         table.add_row([i, str(set_dict[i])])
     print table.draw()
+
+def print_2d_dict_table(self):
+    pass
 
 if __name__ == "__main__":
     parser = Parser(derivations,terminal_symbol)

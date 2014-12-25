@@ -42,7 +42,8 @@ class test_parser(unittest.TestCase):
     def test_the_ast(self):
         pass
 
-    def test_the_first_follow_set(self):
+    def test_the_predict_table(self):
+
         terminal_symbol = {
         'id',
         '+',
@@ -89,6 +90,11 @@ class test_parser(unittest.TestCase):
         except:
             sb_parser.print_set_dict(dict(filter(lambda (k,v):k in non_terminal_symbol,follow_set.items())))
             raise
+
+        pass
+
+
+
 
 
 
