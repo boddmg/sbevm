@@ -70,6 +70,7 @@ class test_parser(unittest.TestCase):
         non_terminal_symbol = parser.calculate_non_terminal_symbol()
         first_set = parser.calculate_first_set()
         follow_set = parser.calculate_follow_set()
+        predict_table = parser.calculate_predict_table()
 
         try:
             self.assertEqual(first_set['F'],first_set['T'])
@@ -91,6 +92,23 @@ class test_parser(unittest.TestCase):
             sb_parser.print_set_dict(dict(filter(lambda (k,v):k in non_terminal_symbol,follow_set.items())))
             raise
 
+        try:
+            self.assertEqual(predict_table['id']['E'],['E',['T','E`']])
+            self.assertEqual(predict_table['id']['T'],['T',['F','T`']])
+            self.assertEqual(predict_table['id']['F'],['F',['id']])
+            self.assertEqual(predict_table['+']['E`'],['E`',['+','T','E`']])
+            self.assertEqual(predict_table['+']['T`'],['T`',['empty']])
+            self.assertEqual(predict_table['*']['T`'],['T`',['*','F','T`']])
+            self.assertEqual(predict_table['(']['E'],['E',['T','E`']])
+            self.assertEqual(predict_table['(']['T'],['T',['F','T`']])
+            self.assertEqual(predict_table['(']['F'],['F',['(','E',')']])
+            self.assertEqual(predict_table[')']['E`'],['E`',['empty']])
+            self.assertEqual(predict_table[')']['T`'],['T`',['empty']])
+            self.assertEqual(predict_table['$']['E`'],['E`',['empty']])
+            self.assertEqual(predict_table['$']['T`'],['T`',['empty']])
+        except:
+            sb_parser.print_2d_dict_table(predict_table)
+            raise
         pass
 
 

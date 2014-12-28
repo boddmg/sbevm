@@ -62,6 +62,7 @@ class Parser():
             first_set[i] = {i}
         for i in non_terminal_symbol:
             first_set[i] = set()
+        first_set['empty'] = set(['empty'])
 
         for i in self._derivations:
             if i[1][0] == 'empty':
@@ -128,8 +129,8 @@ class Parser():
             predict_table[i] = dict()
         predict_table['$'] = dict()
 
-        first_set = self.first_set
-        follow_set = self.follow_set
+        first_set = self.first_set if self.first_set != None else self.calculate_first_set()
+        follow_set = self.follow_set if self.follow_set != None else self.calculate_follow_set()
 
         for i in self._derivations:
             for j in self.get_sub_string_first_set(i[1]):
@@ -137,9 +138,10 @@ class Parser():
                     predict_table[j][i[0]] = i
             if 'empty' in self.get_sub_string_first_set(i[1]):
                 for j in follow_set[i[0]]:
-                    predict_table[i[0]][j] = i
+                    if j in self._terminal_symbol:
+                        predict_table[j][i[0]] = i
                 if '$' in follow_set[i[0]]:
-                    predict_table[i[0]]['$'] = i
+                    predict_table['$'][i[0]] = i
         self._predict_table = predict_table
         return predict_table
 
@@ -150,7 +152,31 @@ def print_set_dict(set_dict):
         table.add_row([i, str(set_dict[i])])
     print table.draw()
 
-def print_2d_dict_table(self):
+def print_2d_dict_table(table):
+    row_header = table.keys()
+    row_header.sort()
+    col_header = set()
+    for i in table:
+        col_header |= set(table[i].keys())
+
+    col_header = list(col_header)
+
+    print_table = Texttable()
+    print_table.header(['non terminal symbol'] + row_header)
+    print_table.set_cols_width([10]*(len(row_header)+1))
+
+    for y in col_header:
+        new_row = [y]
+        for x in row_header:
+            new_item = '-'
+            for j in table[x]:
+                if y == table[x][j][0]:
+                    new_item = table[x][j]
+                    new_item = new_item[0] + '->' + ''.join(new_item[1])
+            new_row.append(new_item)
+        print_table.add_row(new_row)
+    print print_table.draw()
+
     pass
 
 if __name__ == "__main__":
@@ -159,6 +185,7 @@ if __name__ == "__main__":
     follow_set = parser.calculate_follow_set()
     non_terminal_symbol = parser.calculate_non_terminal_symbol()
 
-    print_set_dict(dict(filter(lambda (k,v):k in non_terminal_symbol,first_set.items())))
-    print_set_dict(dict(filter(lambda (k,v):k in non_terminal_symbol,follow_set.items())))
+    #print_set_dict(dict(filter(lambda (k,v):k in non_terminal_symbol,first_set.items())))
+    #print_set_dict(dict(filter(lambda (k,v):k in non_terminal_symbol,follow_set.items())))
+    print_2d_dict_table(parser.calculate_predict_table())
 
