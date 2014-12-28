@@ -24,11 +24,10 @@ terminal_symbol = {
 derivations = [
     ['S', ['P']],
     ['P', ['B', 'P']],
-    ['P', ['empty']],
     ['B', ['int', 'E']],
     ['B', ['if', '(', 'E', '{', 'B', '}', 'else', '{', 'B', '}']],
     ['B', ['E', ';']],
-    ['B', ['empty']],
+    #['E', ['empty']],
     ['E', ['V', 'Ev']],
     ['E', ['(', 'E', ')', 'E`']],
     ['Ev', ['empty']],
@@ -38,10 +37,13 @@ derivations = [
     ['E`', ['-', 'E`']],
     ['E`', ['*', 'E`']],
     ['E`', ['/', 'E`']],
-    ['E`', ['empty']],
+    #['E`', ['empty']],
     ['V', ['number']],
     ['V', ['name']],
 ]
+
+class ParserException(Exception):
+    pass
 
 class Parser():
     def __init__(self,derivation,terminal_symbol):
@@ -135,13 +137,20 @@ class Parser():
         for i in self._derivations:
             for j in self.get_sub_string_first_set(i[1]):
                 if j in self._terminal_symbol:
+                    if predict_table[j].has_key(i[0]):
+                        print str([j,i[0]])
+                        raise ParserException
                     predict_table[j][i[0]] = i
             if 'empty' in self.get_sub_string_first_set(i[1]):
                 for j in follow_set[i[0]]:
                     if j in self._terminal_symbol:
+                        #if i[1] == ['empty']:
+                        #    continue
+                        if predict_table[j].has_key(i[0]):
+                            print str([ j,i,predict_table[j][i[0]],self.get_sub_string_first_set(i[1]) ])
+                            raise ParserException
                         predict_table[j][i[0]] = i
-                if '$' in follow_set[i[0]]:
-                    predict_table['$'][i[0]] = i
+
         self._predict_table = predict_table
         return predict_table
 
@@ -185,7 +194,7 @@ if __name__ == "__main__":
     follow_set = parser.calculate_follow_set()
     non_terminal_symbol = parser.calculate_non_terminal_symbol()
 
-    #print_set_dict(dict(filter(lambda (k,v):k in non_terminal_symbol,first_set.items())))
-    #print_set_dict(dict(filter(lambda (k,v):k in non_terminal_symbol,follow_set.items())))
+    print_set_dict(dict(filter(lambda (k,v):k in non_terminal_symbol,first_set.items())))
+    print_set_dict(dict(filter(lambda (k,v):k in non_terminal_symbol,follow_set.items())))
     print_2d_dict_table(parser.calculate_predict_table())
 
