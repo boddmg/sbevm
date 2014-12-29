@@ -24,20 +24,22 @@ terminal_symbol = {
 derivations = [
     ['S', ['P']],
     ['P', ['B', 'P']],
-    ['B', ['int', 'E']],
-    ['B', ['if', '(', 'E', '{', 'B', '}', 'else', '{', 'B', '}']],
+    ['B', ['int', 'E', ';']],
+    ['B', ['if', '(', 'E', ')', '{', 'B', '}', 'else', '{', 'B', '}']],
     ['B', ['E', ';']],
-    #['E', ['empty']],
-    ['E', ['V', 'Ev']],
-    ['E', ['(', 'E', ')', 'E`']],
+    ['E', ['name', '=', 'E']],
+    ['E', ['T', 'Ev']],
+    ['Ev', ['aop', 'T']],
     ['Ev', ['empty']],
-    ['Ev', ['=', 'E']],
-    ['Ev', ['E`']],
-    ['E`', ['+', 'E`']],
-    ['E`', ['-', 'E`']],
-    ['E`', ['*', 'E`']],
-    ['E`', ['/', 'E`']],
-    #['E`', ['empty']],
+    ['T', ['F', 'T`']],
+    ['T`', ['mop', 'F']],
+    ['T`', ['empty']],
+    ['F', ['(', 'E', ')']],
+    ['aop', ['+']],
+    ['aop', ['-']],
+    ['mop', ['*']],
+    ['mop', ['/']],
+
     ['V', ['number']],
     ['V', ['name']],
 ]
@@ -138,7 +140,7 @@ class Parser():
             for j in self.get_sub_string_first_set(i[1]):
                 if j in self._terminal_symbol:
                     if predict_table[j].has_key(i[0]):
-                        print str([j,i[0]])
+                        print str([ j,i,predict_table[j][i[0]],self.get_sub_string_first_set(i[1]) ])
                         raise ParserException
                     predict_table[j][i[0]] = i
             if 'empty' in self.get_sub_string_first_set(i[1]):
