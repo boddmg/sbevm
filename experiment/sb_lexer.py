@@ -49,6 +49,9 @@ class Token():
         self._content = _content
         self._source = _content
 
+    def type_eq(self, symbol):
+        return self._type == symbol
+
     def __eq__(self, other):
         if self._content != other._content:
             return False
