@@ -2,6 +2,7 @@ __author__ = 'boddmg'
 from texttable import *
 from sb_lexer import Token
 from sb_lexer import Lexer
+import sb_lexer
 from copy import deepcopy
 
 terminal_symbol = {
@@ -30,15 +31,18 @@ derivations = [
     ['B', ['int', 'name', ';']],
     ['B', ['if', '(', 'E', ')', '{', 'B', '}', 'else', '{', 'B', '}']],
     ['B', ['A', ';']],
-    ['A', ['name', '=', 'E']],
-    ['A', ['E']],
-    ['E', ['T', 'Ev']],
-    ['Ev', ['aop', 'T']],
-    ['Ev', ['empty']],
-    ['T', ['F', 'T`']],
-    ['T`', ['mop', 'F']],
-    ['T`', ['empty']],
+
+    ['A', ['V', '=', 'E']],
+
+    ['E', ['T', 'Et']],
+
+    ['Et', ['aop', 'T', 'Et']],
+    ['Et', ['empty']],
+    ['T', ['F', 'Tf']],
+    ['Tf', ['mop', 'F', 'Tf']],
+    ['Tf', ['empty']],
     ['F', ['(', 'E', ')']],
+    ['F', ['V']],
     ['aop', ['+']],
     ['aop', ['-']],
     ['mop', ['*']],
@@ -162,32 +166,39 @@ class Parser():
         return predict_table
 
     def build_the_ast(self, _source_lexer = Lexer()):
-        ast_root = {}
-        ast_stack = []
-        symbol_stack = []
-        number_stack = []
-        program = _source_lexer
-        predict_stack = ['$','S']
-        X = predict_stack[-1]
-        current_token = program.get_next_token()
-        while X != '$':
-            if current_token.type_eq(X):
-                print 'terminal:',predict_stack.pop()
-                current_token = program.get_next_token()
-            elif X in self._terminal_symbol:
-                print X,current_token
-                raise
-            elif not self._predict_table[current_token._type].has_key(X):
-                print X
-                raise
-            elif self._predict_table[current_token._type].has_key(X):
-                item = self._predict_table[current_token._type][X]
-                print item[0],'->',item[1]
-                item = item[1][:]
-                predict_stack.pop()
-                for i in range(len(item)):
-                    predict_stack.append(item.pop())
+        try:
+            ast_root = {}
+            ast_stack = []
+            symbol_stack = []
+            number_stack = []
+            program = _source_lexer
+            predict_stack = ['$','S']
             X = predict_stack[-1]
+            current_token = program.get_next_token()
+            while True:
+                if current_token.type_eq(X):
+                    print 'terminal:',predict_stack.pop()
+                    current_token = program.get_next_token()
+                elif X in self._terminal_symbol:
+                    print X,current_token
+                    raise
+                elif not self._predict_table[current_token._type].has_key(X):
+                    print X,current_token
+                    raise
+                elif self._predict_table[current_token._type].has_key(X):
+                    item = self._predict_table[current_token._type][X]
+                    print item[0],'->',item[1]
+                    item = item[1][:]
+                    predict_stack.pop()
+                    for i in range(len(item)):
+                        new_item = item.pop()
+                        if new_item != 'empty':
+                            predict_stack.append(new_item)
+                X = predict_stack[-1]
+        except sb_lexer.LexerEmpty:
+            pass
+        print 'predict over'
+
         pass
 
 
@@ -235,5 +246,5 @@ if __name__ == "__main__":
     print_set_dict(dict(filter(lambda (k,v):k in non_terminal_symbol,first_set.items())))
     print_set_dict(dict(filter(lambda (k,v):k in non_terminal_symbol,follow_set.items())))
     print_2d_dict_table(parser.calculate_predict_table())
-    parser.build_the_ast(Lexer("a=b+c;"))
+    parser.build_the_ast(Lexer("a=b+c+2*3;"))
 
