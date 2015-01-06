@@ -4,6 +4,9 @@ from sb_lexer import Token
 from sb_lexer import Lexer
 import sb_lexer
 from copy import deepcopy
+import networkx as nx
+import random
+import matplotlib.pyplot as plt
 
 terminal_symbol = {
     'number',
@@ -54,6 +57,27 @@ derivations = [
 
 class ParserException(Exception):
     pass
+
+class AstNode():
+    def __init__(self,name,content=''):
+        self.name = name
+        self.content = content
+        self.id = int(1000*random.random())
+        self.sub_node = []
+
+    def add_subnode(self,sub_node):
+        self.sub_node.append(sub_node)
+
+    def __str__(self):
+        string = '[%s,%s,%s]' % (self.name,self.content,self.id)
+        return string
+
+    def traversal(self,parent,func):
+        func(parent,self)
+        for i in self.sub_node:
+            i.traversal(self,func)
+
+
 
 class Parser():
     def __init__(self,derivation,terminal_symbol):
@@ -167,8 +191,9 @@ class Parser():
 
     def build_the_ast(self, _source_lexer = Lexer()):
         try:
-            ast_root = {}
-            ast_stack = []
+            ast_root = AstNode('S')
+            ast_stack = [ast_root]
+            ast_current_node = ast_stack[-1]
             symbol_stack = []
             number_stack = []
             program = _source_lexer
@@ -178,6 +203,7 @@ class Parser():
             while True:
                 if current_token.type_eq(X):
                     print 'terminal:',predict_stack.pop()
+                    ast_stack.pop().add_subnode(AstNode('val',current_token))
                     current_token = program.get_next_token()
                 elif X in self._terminal_symbol:
                     print X,current_token
@@ -189,15 +215,26 @@ class Parser():
                     item = self._predict_table[current_token._type][X]
                     print item[0],'->',item[1]
                     item = item[1][:]
+
+                    ast_stack.pop()
                     predict_stack.pop()
                     for i in range(len(item)):
                         new_item = item.pop()
                         if new_item != 'empty':
                             predict_stack.append(new_item)
+
+                            ast_new_node = AstNode(new_item)
+                            ast_current_node.add_subnode(ast_new_node)
+                            ast_stack.append(ast_new_node)
+                        else:
+                            pass
                 X = predict_stack[-1]
+                ast_current_node = ast_stack[-1]
         except sb_lexer.LexerEmpty:
             pass
         print 'predict over'
+        print str(ast_root)
+        return ast_root
 
         pass
 
@@ -246,5 +283,8 @@ if __name__ == "__main__":
     print_set_dict(dict(filter(lambda (k,v):k in non_terminal_symbol,first_set.items())))
     print_set_dict(dict(filter(lambda (k,v):k in non_terminal_symbol,follow_set.items())))
     print_2d_dict_table(parser.calculate_predict_table())
-    parser.build_the_ast(Lexer("a=b+c+2*3;"))
+    ast_root = parser.build_the_ast(Lexer("a=b+c+2*3;"))
+    g = nx.DiGraph()
+    connect = lambda x,y:g.add_edge(str(x),str(y))
+    ast_root.traversal('s',connect)
 
