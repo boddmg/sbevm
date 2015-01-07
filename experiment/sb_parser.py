@@ -6,7 +6,6 @@ import sb_lexer
 from copy import deepcopy
 import networkx as nx
 import random
-import matplotlib.pyplot as plt
 
 terminal_symbol = {
     'number',
@@ -73,9 +72,14 @@ class AstNode():
         return string
 
     def traversal(self,parent,func):
-        func(parent,self)
         for i in self.sub_node:
+            func(self,i)
             i.traversal(self,func)
+
+    def traversal_sole(self,func):
+        for i in self.sub_node:
+            func(i)
+            i.traversal_sole(func)
 
 
 
@@ -283,8 +287,21 @@ if __name__ == "__main__":
     print_set_dict(dict(filter(lambda (k,v):k in non_terminal_symbol,first_set.items())))
     print_set_dict(dict(filter(lambda (k,v):k in non_terminal_symbol,follow_set.items())))
     print_2d_dict_table(parser.calculate_predict_table())
-    ast_root = parser.build_the_ast(Lexer("a=b+c+2*3;"))
+    ast_root = parser.build_the_ast(Lexer("a=b+c+2*3+(1+2);"))
+
+
+    def ast_filter(node = AstNode('')):
+        for son in node.sub_node:
+            if son.name in non_terminal_symbol and son.sub_node == []:
+                print son
+                node.sub_node.remove(son)
+    ast_root.traversal_sole(ast_filter)
+
     g = nx.DiGraph()
     connect = lambda x,y:g.add_edge(str(x),str(y))
     ast_root.traversal('s',connect)
+    nx.draw_graphviz(g)
+    nx.write_dot(g,'file.dot')
+
+
 
